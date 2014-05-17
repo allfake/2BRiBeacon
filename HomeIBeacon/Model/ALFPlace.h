@@ -7,7 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "ESTBeacon.h"
 
 @interface ALFPlace : NSObject
+
+@property (nonatomic, strong) NSString *name;
+@property (nonatomic, strong) ESTBeacon *beacon;
 
 @end

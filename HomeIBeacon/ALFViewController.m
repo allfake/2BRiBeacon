@@ -17,13 +17,62 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	// Do any additional setup after loading the view, typically from a nib.
+
+    /*
+     * Place setup.
+     */
+    self.isActiveArray = [[NSMutableArray alloc] init];
+    NSMutableArray *placeMutableArray = [[NSMutableArray alloc] init];
+    for (int i = 1; i < 8; i++) {
+        UIView *view = (UIView *)[self.view viewWithTag:i];
+        [placeMutableArray addObject:view];
+        [self.isActiveArray addObject:@(NO)];
+    }
+    
+    self.placeView = [NSArray arrayWithArray:placeMutableArray];
+    
+    /*
+     * BeaconManager setup.
+     */
+    self.beaconManager = [[ESTBeaconManager alloc] init];
+    self.beaconManager.delegate = self;
+    
+    self.beaconRegion = [[ESTBeaconRegion alloc] initWithProximityUUID:ESTIMOTE_PROXIMITY_UUID
+                                                            identifier:@"2br.region"];
+    [self.beaconManager startRangingBeaconsInRegion:self.beaconRegion];
+    
 }
 
-- (void)didReceiveMemoryWarning
+#pragma mark - ESTBeaconManager delegate
+
+- (void)beaconManager:(ESTBeaconManager *)manager didRangeBeacons:(NSArray *)beacons inRegion:(ESTBeaconRegion *)region
 {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+    for (ESTBeacon * beacon in beacons) {
+        NSInteger index = [beacon.minor integerValue] - 1;
+        if ([beacon.distance floatValue] <= 5.0f && [beacon.major integerValue] && [self.placeView objectAtIndex:index] && ![[self.isActiveArray objectAtIndex:index] integerValue]) {
+            [self changeBackgroundForView:[self.placeView objectAtIndex:index] duration:3.f atIndex:index];
+        }
+    }
 }
+
+- (void)changeBackgroundForView:(UIView *)view duration:(NSInteger)duraiton atIndex:(NSInteger)index
+{
+    [view setBackgroundColor:[UIColor redColor]];
+
+    NSDictionary *dic = [[NSDictionary alloc] initWithObjectsAndKeys:view, @"view", @(index), @"index" , nil];
+    
+    [self.isActiveArray setObject:@(1) atIndexedSubscript:index];
+    
+    [self performSelector:@selector(changeBackgroundToNormalView:) withObject:dic afterDelay:duraiton];
+}
+
+- (void)changeBackgroundToNormalView:(NSDictionary *)dic
+{
+    [[dic objectForKey:@"view"] setBackgroundColor:[UIColor colorWithRed:230.f/255.f green:230.f/255.f blue:230.f/255.f alpha:1.f]];
+    
+    NSNumber *index = [dic objectForKey:@"index"];
+    [self.isActiveArray setObject:@(0) atIndexedSubscript:[index integerValue]];
+}
+
 
 @end
