@@ -39,8 +39,11 @@
     
     self.beaconRegion = [[ESTBeaconRegion alloc] initWithProximityUUID:ESTIMOTE_PROXIMITY_UUID
                                                             identifier:@"2br.region"];
-    [self.beaconManager startRangingBeaconsInRegion:self.beaconRegion];
     
+    self.beaconRegion.notifyOnEntry = YES;
+    self.beaconRegion.notifyOnExit = YES;
+    
+    [self.beaconManager startRangingBeaconsInRegion:self.beaconRegion];
 }
 
 #pragma mark - ESTBeaconManager delegate
@@ -54,6 +57,24 @@
         }
     }
 }
+
+- (void)beaconManager:(ESTBeaconManager *)manager didEnterRegion:(ESTBeaconRegion *)region
+{
+    UILocalNotification *notification = [UILocalNotification new];
+    notification.alertBody = @"Welcome to 2BR.";
+    
+    [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
+}
+
+- (void)beaconManager:(ESTBeaconManager *)manager didExitRegion:(ESTBeaconRegion *)region
+{
+    UILocalNotification *notification = [UILocalNotification new];
+    notification.alertBody = @"See you again.";
+    
+    [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
+}
+
+#pragma mark - change backgrond color
 
 - (void)changeBackgroundForView:(UIView *)view duration:(NSInteger)duraiton atIndex:(NSInteger)index
 {
